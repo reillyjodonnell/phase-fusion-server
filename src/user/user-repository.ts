@@ -1,11 +1,4 @@
-export class User {
-  id: string;
-  name: string;
-  constructor(id: string, name: string) {
-    this.id = id;
-    this.name = name;
-  }
-}
+import { User } from './user';
 
 export class UserRepository {
   private users: { [id: string]: User };
@@ -13,7 +6,7 @@ export class UserRepository {
     this.users = {};
   }
   create(user: User) {
-    this.users[user.id] = user;
+    this.users[user.getId()] = user;
     return user;
   }
   get(id: string) {

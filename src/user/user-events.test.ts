@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, spyOn } from 'bun:test';
 import { UserEvents } from './user-events';
 import { io as ioc } from 'socket.io-client';
-import { Server } from 'socket.io';
+import { Server, type Socket } from 'socket.io';
 import { UserService } from './user-service';
 import { UserRepository } from './user-repository';
 import { createServer } from 'node:http';

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'bun:test';
-import { UserRepository, User } from './user-repository';
+import { UserRepository } from './user-repository';
+import { User } from './user';
 
 describe('user creation', () => {
   it('should create new user', () => {

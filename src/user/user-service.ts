@@ -1,9 +1,15 @@
-import { User, UserRepository } from './user-repository';
+import { User } from './user';
+import { UserRepository } from './user-repository';
 
+type UserArgs = {
+  id: string;
+  name: string;
+};
 export class UserService {
   constructor(private userRepository: UserRepository) {}
-  createUser(user: User) {
-    return this.userRepository.create(user);
+  createUser(user: UserArgs) {
+    const newUser = new User(user.id, user.name);
+    return this.userRepository.create(newUser);
   }
   getUser(id: string) {
     return this.userRepository.get(id);
