@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { UserService } from './user/user-application';
+import { UserService } from './user/user-service';
 import { UserRepository } from './user/user-repository';
 import { UserEvents } from './user/user-events';
 

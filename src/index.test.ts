@@ -31,11 +31,8 @@ describe('user creation', () => {
   });
 
   it('should tell me if Im a new user', () => {
-    console.log('Running test');
     return new Promise((resolve) => {
-      clientSocket.on('session', (session) => {
-        console.log(session);
-      });
+      clientSocket.on('session', (session) => {});
       resolve();
     });
   });
@@ -44,7 +41,6 @@ describe('user creation', () => {
     const fakeUser = {
       id: USER_ID,
       name: 'John Doe',
-      email: 'johndoe@gmail.com',
     };
     return new Promise((resolve) => {
       clientSocket.emit('createUser', fakeUser, (createdUser) => {
@@ -62,7 +58,6 @@ describe('user creation', () => {
       clientSocket.emit('editUser', fakeUser, (updatedUser) => {
         expect(updatedUser).toStrictEqual({
           ...fakeUser,
-          email: 'johndoe@gmail.com',
           id: USER_ID,
         });
         resolve();

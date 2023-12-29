@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll, spyOn } from 'bun:test';
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  spyOn,
+  beforeEach,
+  afterEach,
+} from 'bun:test';
 import { UserEvents } from './user-events';
 import { io as ioc } from 'socket.io-client';
 import { Server, type Socket } from 'socket.io';
@@ -14,7 +23,7 @@ describe('UserEvents', () => {
   const userRepository = new UserRepository();
   const userService = new UserService(userRepository);
 
-  beforeAll((done) => {
+  beforeEach((done) => {
     const httpServer = createServer();
     io = new Server(httpServer);
     httpServer.listen(() => {
@@ -27,7 +36,7 @@ describe('UserEvents', () => {
     });
   });
 
-  afterAll(() => {
+  afterEach(() => {
     io.close();
     clientSocket.disconnect();
   });
@@ -35,7 +44,7 @@ describe('UserEvents', () => {
   it.only('should handle createUser event when listening for events', () => {
     const userEvents = new UserEvents(userService, serverSocket);
 
-    userEvents.attach(serverSocket);
+    userEvents.attach();
 
     const spy = spyOn(userService, 'createUser');
 

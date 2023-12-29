@@ -4,9 +4,14 @@ import { User } from './user';
 
 // UserEvents.ts
 export class UserEvents {
-  constructor(private userService: UserService, private socket: Socket) {}
+  socket: Socket;
+  userService: UserService;
+  constructor(userService: UserService, socket: Socket) {
+    this.socket = socket;
+    this.userService = userService;
+  }
 
-  attach(socket: Socket) {
+  attach() {
     this.socket.on('createUser', (user: typeof User, callback) => {
       const res = this.userService.createUser(user);
       callback(res);
