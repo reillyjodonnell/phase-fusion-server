@@ -2,10 +2,14 @@ import { Server } from 'socket.io';
 import { UserService } from './user/user-service';
 import { UserRepository } from './user/user-repository';
 import { UserEvents } from './user/user-events';
+import { db } from './db';
 
 const randomId = () => {
   return Math.floor(Math.random() * 1000);
 };
+
+const database = await db();
+
 const userRepository = new UserRepository();
 
 const userService = new UserService(userRepository);
