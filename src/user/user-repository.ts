@@ -1,36 +1,33 @@
+import { RedisClientType } from 'redis';
 import { User } from './user';
 
 export class UserRepository {
   private users: { [id: string]: User };
-  constructor() {
+  private redis: RedisClientType;
+
+  constructor(redis: RedisClientType) {
+    this.redis = redis;
     this.users = {};
   }
-  create(user: User) {
-    this.users[user.getId()] = user;
-    return user;
+  async create(user: User) {
+    const dto = user.toDTO();
+    this.redis.set(user.getId(), JSON.stringify(dto));
   }
-  get(id: string) {
-    return this.users[id];
+  async get(id: string) {
+    const user = await this.redis.get(id);
+    if (user) {
+      return User.fromDTO(JSON.parse(user));
+    }
+    throw new Error('User not found');
   }
-  edit(id: string, newData: Partial<User>) {
-    const user = this.users[id];
-    if (!user) {
-      return { error: 'User does not exist' };
-      // Or return null/undefined if you prefer
+  async edit(id: string, newData: Partial<User>) {
+    const user = await this.redis.get(id);
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      const dto = { ...parsedUser, ...newData };
+      return this.redis.set(id, JSON.stringify(dto));
     }
-
-    // Update user properties
-    for (const key in newData) {
-      // make sure the key is valid and type of User
-      // @ts-ignore
-      if (newData[key] !== undefined) {
-        // @ts-ignore
-        user[key] = newData[key];
-      }
-    }
-
-    // Optionally return the updated user
-    return user;
+    throw new Error('User not found');
   }
 
   // GET ALL ENTRIES

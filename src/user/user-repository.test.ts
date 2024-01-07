@@ -1,23 +1,31 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, afterAll } from 'bun:test';
 import { UserRepository } from './user-repository';
 import { User } from './user';
+import { createClient } from 'redis';
 
-describe('user creation', () => {
-  it('should create new user', () => {
-    let userRepository = new UserRepository();
-    let user = new User('John', '1234');
-    userRepository.create(user);
+describe('user creation', async () => {
+  const client = createClient();
+  await client.connect();
+  afterAll(async () => {
+    await client.disconnect();
+  });
+  // create redis instance
+  it('should create and get new user', async () => {
+    let userRepository = new UserRepository(client);
+    let user = new User('1', 'John');
+    await userRepository.create(user);
 
-    let createdUser = userRepository.get(user.id);
+    let createdUser = await userRepository.get(user.id);
     expect(createdUser).toStrictEqual(user);
   });
 
-  it('should edit existing user', () => {
-    let userRepository = new UserRepository();
-    let user = new User('John', '1234');
-    userRepository.create(user);
-    userRepository.edit(user.id, { name: 'Jane' });
-    expect(userRepository.get(user.id).name).toStrictEqual('Jane');
+  it('should edit existing user', async () => {
+    let userRepository = new UserRepository(client);
+    let user = new User('1', 'John');
+    await userRepository.create(user);
+    await userRepository.edit(user.id, { name: 'Jane' });
+    const editedUser = await userRepository.get(user.id);
+    expect(editedUser.getName()).toStrictEqual('Jane');
   });
   // ...
 });

@@ -1,3 +1,8 @@
+type UserDTO = {
+  id: string;
+  name: string;
+};
+
 export class User {
   id: string;
   name: string;
@@ -13,6 +18,17 @@ export class User {
   }
   setName(name: string) {
     this.name = name;
+  }
+
+  toDTO(): UserDTO {
+    return {
+      id: this.id,
+      name: this.name,
+    };
+  }
+
+  static fromDTO(dto: UserDTO) {
+    return new User(dto.id, dto.name);
   }
 }
 export type UserArgs = typeof User;

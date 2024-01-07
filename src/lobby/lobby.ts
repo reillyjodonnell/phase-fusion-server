@@ -1,3 +1,10 @@
+export type LobbyDTO = {
+  id: string;
+  roomCode: string;
+  maxPlayers: number;
+  private: boolean;
+  players: Map<String, { isReady: boolean; isHost: boolean }>;
+};
 export class Lobby {
   private id: string;
   private roomCode: string;
@@ -6,9 +13,18 @@ export class Lobby {
   private players: Map<String, { isReady: boolean; isHost: boolean }> =
     new Map();
 
-  constructor(id: string, roomCode: string) {
+  constructor(
+    id: string,
+    roomCode: string,
+    maxPlayers = 2,
+    privateLobby = true,
+    players = new Map()
+  ) {
     this.id = id;
     this.roomCode = roomCode;
+    this.maxPlayers = maxPlayers;
+    this.private = privateLobby;
+    this.players = players;
   }
 
   getId() {
@@ -31,6 +47,26 @@ export class Lobby {
 
   setMaxPlayers(maxPlayers: number) {
     this.maxPlayers = maxPlayers;
+  }
+
+  toDTO(): LobbyDTO {
+    return {
+      id: this.id,
+      roomCode: this.roomCode,
+      maxPlayers: this.maxPlayers,
+      private: this.private,
+      players: this.players,
+    };
+  }
+  static fromDTO(dto: LobbyDTO) {
+    // should pass in all options for lobbydto
+    return new Lobby(
+      dto.id,
+      dto.roomCode,
+      dto.maxPlayers,
+      dto.private,
+      dto.players
+    );
   }
 
   join(id: string) {

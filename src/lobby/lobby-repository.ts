@@ -1,31 +1,24 @@
 import { RedisClientType } from '@redis/client';
 import { Lobby } from './lobby';
 
-interface ILobbyRepository {
-  create(id: string, lobby: Lobby): Promise<Lobby | null>;
-  get(id: string): Promise<Lobby>;
-}
-
-export class LobbyRepository implements ILobbyRepository {
+export class LobbyRepository {
   private lobbyRepository: RedisClientType;
 
   constructor(lobbyRepository: RedisClientType) {
     this.lobbyRepository = lobbyRepository;
   }
 
-  async set(id: string, lobby: Lobby) {
-    const set = await this.lobbyRepository.hSet(id, lobby);
-    // check the number to see if successful
-    if (set === 0) {
-      return null;
-    }
-    return lobby;
+  async create(lobby: Lobby) {
+    await this.lobbyRepository.set(
+      lobby.getId(),
+      JSON.stringify(lobby.toDTO())
+    );
   }
   async get(id: string) {
-    const res = await this.lobbyRepository.hGetAll(id);
-    if (!res) {
-      return null;
+    const lobby = await this.lobbyRepository.get(id);
+    if (lobby) {
+      return Lobby.fromDTO(JSON.parse(lobby));
     }
-    return res;
+    throw new Error('Lobby not found');
   }
 }
