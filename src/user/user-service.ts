@@ -7,9 +7,9 @@ type UserArgs = {
 };
 export class UserService {
   constructor(private userRepository: UserRepository) {}
-  createUser(user: UserArgs) {
+  async createUser(user: UserArgs) {
     const newUser = new User(user.id, user.name);
-    return this.userRepository.create(newUser);
+    return await this.userRepository.create(newUser);
   }
   getUser(id: string) {
     return this.userRepository.get(id);

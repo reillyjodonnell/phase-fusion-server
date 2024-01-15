@@ -11,9 +11,9 @@ export class UserEvents {
     this.userService = userService;
   }
 
-  attach() {
-    this.socket.on('createUser', (user: typeof User, callback) => {
-      const res = this.userService.createUser(user);
+  listen() {
+    this.socket.on('createUser', async (user: typeof User, callback) => {
+      const res = await this.userService.createUser(user);
       callback(res);
     });
     this.socket.on('editUser', (user, callback) => {

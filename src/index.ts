@@ -3,44 +3,101 @@ import { UserService } from './user/user-service';
 import { UserRepository } from './user/user-repository';
 import { UserEvents } from './user/user-events';
 import { db } from './db';
+import { RedisClientType } from 'redis';
 
-const randomId = () => {
-  return Math.floor(Math.random() * 1000);
-};
+// generate new uuid
+function randomId() {
+  return crypto.randomUUID();
+}
 
 const database = await db();
 
-const userRepository = new UserRepository();
+const userRepository = new UserRepository(database as RedisClientType);
 
 const userService = new UserService(userRepository);
 
+interface ServerToClientEvents {
+  session: ({
+    sessionID,
+    userID,
+    isNewUser,
+  }: {
+    sessionID: string;
+    userID: string;
+    isNewUser: boolean;
+  }) => void;
+  basicEmit: (a: number, b: string, c: Buffer) => void;
+  withAck: (d: string, callback: (e: number) => void) => void;
+}
+
+interface ClientToServerEvents {
+  session: (
+    callback: (data: {
+      sessionID: string;
+      userID: string;
+      isNewUser: boolean;
+    }) => void
+  ) => void;
+}
+
+interface InterServerEvents {
+  ping: () => void;
+}
+
+interface SocketData {
+  sessionID: string;
+  userID: string;
+  isNewUser: boolean;
+}
+
 export function createServer() {
-  const io = new Server({
+  const io = new Server<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >({
     /* options */
   });
 
-  io.use((socket, next) => {
-    const sessionID = socket.handshake.auth.sessionID;
-    if (sessionID) {
-      socket.userID = sessionID;
+  io.use(async (socket, next) => {
+    const token = socket.handshake.auth.sessionID;
+    if (token) {
       // find existing session by id
+      const found = await userService.getUser(token);
+      if (found) {
+        socket.data.sessionID = token;
+        socket.data.userID = found.id;
+        socket.data.isNewUser = false;
+      }
       return next();
     }
 
+    // it's a new user, let's create a new session
     // create new session
-    socket.sessionID = randomId();
-    socket.userID = randomId();
+    socket.data.sessionID = randomId();
+    socket.data.userID = randomId();
+    socket.data.isNewUser = true;
     next();
   });
 
   io.on('connection', (socket) => {
     socket.emit('session', {
-      sessionID: socket.sessionID,
-      userID: socket.userID,
+      sessionID: socket.data.sessionID,
+      userID: socket.data.userID,
+      isNewUser: socket.data.isNewUser,
     });
+    socket.on('session', (callback) => {
+      callback({
+        sessionID: socket.data.sessionID,
+        userID: socket.data.userID,
+        isNewUser: socket.data.isNewUser,
+      });
+    });
+    console.log('emitted session');
     const userEvents = new UserEvents(userService, socket);
 
-    userEvents.attach(socket);
+    userEvents.listen();
   });
   io.on('disconnect', () => {});
 

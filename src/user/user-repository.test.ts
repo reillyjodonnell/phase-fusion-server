@@ -1,7 +1,7 @@
 import { describe, it, expect, afterAll } from 'bun:test';
 import { UserRepository } from './user-repository';
 import { User } from './user';
-import { createClient } from 'redis';
+import { RedisClientType, createClient } from 'redis';
 
 describe('user creation', async () => {
   const client = createClient();
@@ -11,7 +11,7 @@ describe('user creation', async () => {
   });
   // create redis instance
   it('should create and get new user', async () => {
-    let userRepository = new UserRepository(client);
+    let userRepository = new UserRepository(client as RedisClientType);
     let user = new User('1', 'John');
     await userRepository.create(user);
 
@@ -20,7 +20,7 @@ describe('user creation', async () => {
   });
 
   it('should edit existing user', async () => {
-    let userRepository = new UserRepository(client);
+    let userRepository = new UserRepository(client as RedisClientType);
     let user = new User('1', 'John');
     await userRepository.create(user);
     await userRepository.edit(user.id, { name: 'Jane' });

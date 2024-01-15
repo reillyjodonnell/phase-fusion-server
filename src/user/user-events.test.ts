@@ -15,12 +15,18 @@ import { UserService } from './user-service';
 import { UserRepository } from './user-repository';
 import { createServer } from 'node:http';
 import { type AddressInfo } from 'node:net';
+import { RedisClientType, createClient } from 'redis';
 
-describe('UserEvents', () => {
+describe('UserEvents', async () => {
   let io: Server;
   let clientSocket: Socket;
   let serverSocket: Socket;
-  const userRepository = new UserRepository();
+  const client = createClient();
+  await client.connect();
+  afterAll(async () => {
+    await client.disconnect();
+  });
+  const userRepository = new UserRepository(client as RedisClientType);
   const userService = new UserService(userRepository);
 
   beforeEach((done) => {
@@ -44,7 +50,7 @@ describe('UserEvents', () => {
   it.only('should handle createUser event when listening for events', () => {
     const userEvents = new UserEvents(userService, serverSocket);
 
-    userEvents.attach();
+    userEvents.listen();
 
     const spy = spyOn(userService, 'createUser');
 

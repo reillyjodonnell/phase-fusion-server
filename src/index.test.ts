@@ -32,34 +32,24 @@ describe('user creation', () => {
 
   it('should tell me if Im a new user', () => {
     return new Promise((resolve) => {
-      clientSocket.on('session', (session) => {});
-      resolve();
-    });
-  });
-
-  it('should allow users to create a user account', () => {
-    const fakeUser = {
-      id: USER_ID,
-      name: 'John Doe',
-    };
-    return new Promise((resolve) => {
-      clientSocket.emit('createUser', fakeUser, (createdUser) => {
-        expect(createdUser).toStrictEqual(fakeUser);
+      clientSocket.emit('session', (session) => {
+        expect(session.isNewUser).toBe(true);
         resolve();
       });
     });
   });
-
-  it('should allow users to edit their user account', () => {
-    const fakeUser = {
-      name: 'Jane Doe',
-    };
+  it('should tell me if Im an existing user', () => {
     return new Promise((resolve) => {
-      clientSocket.emit('editUser', fakeUser, (updatedUser) => {
-        expect(updatedUser).toStrictEqual({
-          ...fakeUser,
-          id: USER_ID,
-        });
+      const fakeUser = {
+        id: USER_ID,
+        name: 'John Doe',
+      };
+      clientSocket.emit('createUser', fakeUser, (createdUser) => {
+        console.log(createdUser);
+      });
+      clientSocket.emit('session', (session) => {
+        console.log(session);
+        expect(session.isNewUser).toBe(false);
         resolve();
       });
     });

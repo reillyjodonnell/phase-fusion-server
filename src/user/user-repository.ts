@@ -11,7 +11,11 @@ export class UserRepository {
   }
   async create(user: User) {
     const dto = user.toDTO();
-    this.redis.set(user.getId(), JSON.stringify(dto));
+    const status = await this.redis.set(user.getId(), JSON.stringify(dto));
+    if (status) {
+      return user;
+    }
+    throw new Error('User not created');
   }
   async get(id: string) {
     const user = await this.redis.get(id);
