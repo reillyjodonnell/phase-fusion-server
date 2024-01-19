@@ -1,7 +1,9 @@
 import { beforeAll, afterAll, describe, it, expect } from 'bun:test';
 import { io as ioc, type Socket as ClientSocket } from 'socket.io-client';
-import { Server, type Socket as ServerSocket } from 'socket.io';
-import { createServer } from '.';
+import { Server } from 'socket.io';
+import { createServer } from './createServer';
+import { db } from './db';
+import { RedisClientType } from 'redis';
 
 const USER_ID = '2';
 
@@ -9,9 +11,11 @@ describe('user creation', () => {
   let io: Server;
   let clientSocket: ClientSocket;
 
-  beforeAll((done) => {
+  beforeAll(async (done) => {
+    const database = await db();
+    database.flushAll();
     // Start the server asynchronously
-    io = createServer();
+    io = createServer(database as RedisClientType);
 
     // Initialize client socket
     clientSocket = ioc('http://localhost:3000', {
@@ -31,6 +35,8 @@ describe('user creation', () => {
   });
 
   it('should tell me if Im a new user', () => {
+    // make sure the user doesn't exist before hand
+
     return new Promise((resolve) => {
       clientSocket.emit('session', (session) => {
         expect(session.isNewUser).toBe(true);
